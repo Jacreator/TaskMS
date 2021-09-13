@@ -43,8 +43,8 @@ class TaskRepository extends BaseRepository implements TaskRepositoryInterface
         return $this->model->where('id', $id)->update($data);
     }
 
-    public function deleteTask($id): ?Model
+    public function deleteTask($id): ?int
     {
-        return $this->model->delete($id);
+        return $this->model->where('id', $id)->delete($id);
     }
 }

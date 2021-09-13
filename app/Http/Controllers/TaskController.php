@@ -123,16 +123,16 @@ class TaskController extends Controller
     public function destroy(Request $request)
     {
         $task = $this->taskRepository->deleteTask($request->id);
-        $delete_files = TaskFile::whereTaskId($request->id)->get();
-        foreach($delete_files as $file){
-            // remove  file from public directory
-            unlink(public_path() . '/images/' . $file->filename);
-            // delete entry from database
-            $file->delete();
+        if($task){
+            $delete_files = TaskFile::whereTaskId($request->id)->get();
+            foreach ($delete_files as $file) {
+                // remove  file from public directory
+                unlink(public_path() . '/images/' . $file->filename);
+                // delete entry from database
+                $file->delete();
+            }
         }
-
-        Session::flash('success', 'Task was deleted');
-        return redirect()->back();
+        return response()->noContent();;
     }
 
     public function reorder(Request $request){
@@ -152,6 +152,6 @@ class TaskController extends Controller
             
         }
         
-        return response()->noContent();
+        return response()->json('true');
     }
 }

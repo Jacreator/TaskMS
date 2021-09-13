@@ -27,5 +27,5 @@ Route::post('/project', 'ProjectController@store')->name('create-project');
 Route::post('/getTasks', 'TaskController@index')->name('getTask');
 Route::post('/tasks', 'TaskController@store')->name('create-task');
 Route::get('/tasks/{task}', 'TaskController@show')->name('task-edit');
-Route::delete('task/task', 'TaskController@destroy')->name('task-destroy');
+Route::get('task/task', 'TaskController@destroy')->name('task-destroy');
 Route::get('task/reorder', 'TaskController@reorder')->name('task-reorder');

@@ -15,5 +15,5 @@ interface TaskRepositoryInterface
 
     public function updateTask(array $attributes, $id): ?int;
 
-    public function deleteTask($id): ?Model;
+    public function deleteTask($id): ?int;
 }

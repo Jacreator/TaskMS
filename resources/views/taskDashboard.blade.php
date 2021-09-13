@@ -45,7 +45,7 @@
                                 <table class=" table table-striped table-hover datatable datatable-task">
                                     <tbody style="cursor: all-scroll;">
                                         @foreach ($tasks as $task)
-                                        <input type="hidden" name="proId" id="proId" value="{{ $task->priority }}">
+                                            <input type="hidden" name="proId" id="proId" value="{{ $task->priority }}">
                                             <tr id="{{ $task->id }}">
 
                                                 <td>
@@ -63,16 +63,8 @@
                                                     <a class="btn btn-xs btn-info"
                                                         href="{{ route('task-edit', $task->id) }}">{{ __('Edit') }}
                                                     </a>
-
-
-                                                    <form action="{{ route('task-destroy', $task->id) }}" method="POST"
-                                                        onsubmit="return confirm('{{ __('Are you Sure?') }}');"
-                                                        style="display: inline-block;">
-                                                        <input type="hidden" name="_method" value="DELETE">
-                                                        <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                                                        <input type="submit" class="btn btn-xs btn-danger"
-                                                            value="{{ __('Detele') }}">
-                                                    </form>
+                                                    <button id="{{'del_'.$task->id}}" data-id="{{$task->id}}" class="delete btn btn-xs btn-danger"
+                                                            >{{ __('Detele') }}</button>
                                                 </td>
 
                                             </tr>
@@ -236,36 +228,64 @@
 
     </div>
     <script>
-            $('tbody').sortable({
-                placeholder: "ui-state-highlight",
-                update: function(event, ui) {
-                    var priority_id_array = new Array();
-                    var task_id_array = new Array();
-                    $('tbody tr').each(function() {
-                        priority_id_array.push($(this).attr('id'));
-                        
-                    });
-                    let _tokenTask = $('#tokenTask').value
-                    console.log('Reorder');
+        $('tbody').sortable({
+            placeholder: "ui-state-highlight",
+            update: function(event, ui) {
+                var priority_id_array = new Array();
+                var task_id_array = new Array();
+                $('tbody tr').each(function() {
+                    priority_id_array.push($(this).attr('id'));
+
+                });
+                let _tokenTask = $('#tokenTask').value
+                console.log('Reorder');
+                $.ajax({
+                    url: "{{ route('task-reorder') }}",
+                    method: "GET",
+                    data: {
+                        priority_id_array: priority_id_array
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    },
+                    success: function(response) {
+                        location.reload();
+                    },
+
+                })
+            }
+        });
+        // Delete 
+        $('.delete').click(function() {
+            var el = this;
+                    // Delete id
+            var deleteid = $(this).data('id');
+
+            // Confirm box
+            bootbox.confirm("Do you really want to delete record?", function(result) {
+                if (result) {
+                    // AJAX Request
                     $.ajax({
-                        url: "{{ route('task-reorder') }}",
-                        method: "GET",
+                        url: "{{ route('task-destroy') }}",
+                        type: 'GET',
                         data: {
-                            priority_id_array: priority_id_array,
-                            task_id_array: task_id_array
+                            id: deleteid
                         },
-                        error: function(error) {
-                            console.log(error);
+                        error: function(error){
+                            bootbox.alert('Record not deleted.');
                         },
                         success: function(response) {
-                            location.reload();
-                        },
-
-                    })
+                            // Removing row from HTML Table
+                            $(el).closest('tr').css('background', 'tomato');
+                            $(el).closest('tr').fadeOut(800, function() {
+                                $(this).remove();
+                            });
+                        
+                        }
+                    });
                 }
-            });
-        
-        var taskRoute = document.getElementById('taskRoute').value
+            })
+        });
     </script>
 
 @endsection
