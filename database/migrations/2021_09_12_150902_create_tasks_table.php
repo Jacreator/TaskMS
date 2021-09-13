@@ -19,11 +19,13 @@ class CreateTasksTable extends Migration
             $table->bigInteger('user_id')->unsigned();
             $table->bigInteger('project_id')->unsigned();
             $table->string('name');
-            $table->text('description');
+            $table->text('description')->nullable();
             $table->integer('priority')->default(Task::PRIORITY_LEVEL_LOW);
             $table->boolean('completed')->default(Task::NOT_COMPLETED);
             $table->timestamps();
             $table->dateTime('duedate')->nullable();
+            $table->integer('position')->nullable();
+            $table->softDeletes();
         });
 
         Schema::table('tasks', function (Blueprint $table) {

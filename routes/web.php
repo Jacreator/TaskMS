@@ -14,9 +14,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route::get('/', function () {
+//     return view('welcome');
+// });
 
 Auth::routes();
 
@@ -24,3 +24,8 @@ Auth::routes();
 Route::get('/home', 'HomeController@index')->name('home');
 Route::get('/workspace', 'DashboardController@index')->name('workspace');
 Route::post('/project', 'ProjectController@store')->name('create-project');
+Route::post('/getTasks', 'TaskController@index')->name('getTask');
+Route::post('/tasks', 'TaskController@store')->name('create-task');
+Route::get('/tasks/{task}', 'TaskController@show')->name('task-edit');
+Route::delete('task/task', 'TaskController@destroy')->name('task-destroy');
+Route::get('task/reorder', 'TaskController@reorder')->name('task-reorder');
