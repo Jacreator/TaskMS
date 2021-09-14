@@ -6,6 +6,7 @@ use App\Models\Task;
 use App\Models\TaskFile;
 use Illuminate\Http\Request;
 use App\Http\Requests\TaskRequest;
+use App\Http\Requests\UpdateTaskRequest;
 use Illuminate\Support\Facades\Log;
 use function GuzzleHttp\json_encode;
 use Illuminate\Support\Facades\Session;
@@ -48,17 +49,18 @@ class TaskController extends Controller
      */
     public function store(TaskRequest $request)
     {
+        $validated = $request->validated();
         $data = [
-            'name' => $request->name,
-            'duedate' => $request->duedate,
-            'priority' => $request->priority ?? Task::PRIORITY_LEVEL_LOW,
-            'project_id' => $request->taskProject,
-            'user_id' => $request->user
+            'name' => $validated['name'],
+            'duedate' => $validated['duedate'],
+            'priority' => $validated['priority'] ?? Task::PRIORITY_LEVEL_LOW,
+            'project_id' => $validated['taskProject'],
+            'user_id' => $validated['user']
         ];
         $task = $this->taskRepository->createTask($data);
 
         if($task && $request->hasFile('photos')){
-            foreach ($request->photos as  $file) {
+            foreach ($validated['photos'] as  $file) {
                 $filename = strtr(pathinfo(time() . '_' . $file->getClientOriginalName(), PATHINFO_FILENAME), [' ' => '', '.' => '']) . '.' . pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION);
                 $file->move('images', $filename);
                 TaskFile::create([
@@ -72,12 +74,12 @@ class TaskController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Show the form for editing the specified resource.
      *
      * @param  \App\Task  $task
      * @return \Illuminate\Http\Response
      */
-    public function show(Task $task)
+    public function edit(Task $task)
     {
         $users = $this->userRepository->all();
         $projects = $this->projectRepository->all();
@@ -92,26 +94,38 @@ class TaskController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Task  $task
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Task $task)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \App\Task  $task
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Task $task)
+    public function update(UpdateTaskRequest $request, Task $task)
     {
-        //
+        $validated = $request->validated();
+        // dd($request->toArray());
+        $task->name = $validated['name'];
+        $task->user_id = $validated['user'];
+        $task->priority = $validated['priority'];
+        $task->project_id = $validated['taskProject'];
+        $task->duedate = is_null($validated['duedate']) ? $task->duedate : $validated['duedate'];
+
+        if ($request->hasFile('photos')) {
+            foreach ($request->photos as $file) {
+                $filename = strtr(pathinfo(time() . '_' . $file->getClientOriginalName(), PATHINFO_FILENAME), [' ' => '', '.' => '']) . '.' . pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION);
+                
+                $file->move('images', $filename);
+
+                // save to DB
+                TaskFile::create([
+                    'task_id'  => $task->id,
+                    'filename' => $filename  
+                ]);
+            }
+        }
+
+        $task->save();
+        return redirect()->route('workspace');
     }
 
     /**
@@ -153,5 +167,15 @@ class TaskController extends Controller
         }
         
         return response()->json('true');
+    }
+
+    public function deleteFile(TaskFile $taskFile){
+        
+        unlink(public_path() . '/images/' . $taskFile->filename);
+
+        // delete entry from database
+        $taskFile->delete();
+        Session::flash('success', 'File Deleted');
+        return redirect()->back(); 
     }
 }

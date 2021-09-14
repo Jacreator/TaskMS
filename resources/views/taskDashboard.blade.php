@@ -146,7 +146,7 @@
                                 <div class="col-md">
                                     <input id="duedate" type="date"
                                         class="form-control @error('duedate') is-invalid @enderror" name="duedate" required
-                                        multiple>
+                                        >
 
                                     @error('duedate')
                                         <span class="invalid-feedback" role="alert">
