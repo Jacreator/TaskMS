@@ -45,4 +45,3 @@ This is a simple task management project built with some functionalities, such a
 ### Contact Me
 
 - **[LinkedIn](https://linkedin.com/in/jacreator)**
-- **[Email](jambone.james82@gmail.com)**
